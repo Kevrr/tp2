@@ -60,7 +60,7 @@ class MainWindow:
 
     def openGame(self):
         self.master.withdraw()
-        game = Game()
+        game = Game(self)
 
     def openAbout(self):
         self.master.withdraw()

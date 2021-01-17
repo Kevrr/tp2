@@ -65,9 +65,8 @@ class Fuel(pygame.sprite.Sprite):
 
     def advance(self):
         if self.rect.size[0] != 50:
-            x = self.rect.size[0] + 2
-            y = self.rect.size[1] + 2
-            self.rect.size = (x, y)
+            self.rect.size = (self.rect.size[0] + 2, self.rect.size[1] + 2)
+            self.image = pygame.transform.scale(self.image, self.rect.size)
         else:
             time.sleep(0.01)
             self.delete()
@@ -97,9 +96,8 @@ class Asteroid(pygame.sprite.Sprite):
 
     def advance(self):
         if self.rect.size != (100, 100):
-            x = self.rect.size[0] + 1
-            y = self.rect.size[1] + 1
-            self.rect.size = (x, y)
+            self.rect.size = (self.rect.size[0] + 1, self.rect.size[1] + 1)
+            self.image = pygame.transform.scale(self.image, self.rect.size)
         else:
             time.sleep(0.01)
             self.delete()
@@ -133,9 +131,8 @@ class Ring(pygame.sprite.Sprite):
 
     def advance(self):
         if self.rect.size != (100, 100):
-            x = self.rect.size[0] + 2
-            y = self.rect.size[1] + 2
-            self.rect.size = (x, y)
+            self.rect.size = (self.rect.size[0] + 2, self.rect.size[1] + 2)
+            self.image = pygame.transform.scale(self.image, self.rect.size)
         else:
             time.sleep(0.01)
             self.delete()
@@ -163,7 +160,8 @@ class Game:
     obstacles = []
     endText = ""
 
-    def __init__(self):
+    def __init__(self, window):
+        self.window = window
         pygame.init()
 
         self.screen = pygame.display.set_mode((1000, 700))
@@ -206,17 +204,11 @@ class Game:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
-                    self.left = 0
-                    self.player.energy = 0
                     self.execute = False
                 if not self.player.shooting:
                     if event.type == pygame.KEYDOWN:
                         if event.key == K_ESCAPE:
                             self.execute = False
-                            pygame.quit()
-                            self.left = 0
-                            self.player.energy = 0
                         else:
                             if event.key == K_UP:
                                 self.movePlayer("y", -10)
@@ -246,14 +238,7 @@ class Game:
             self.player.energy -= 0.1
             pygame.display.flip()
 
-            if self.finish:
-                time.sleep(2)
-                self.execute = False
-                pygame.quit()
-                self.left = 0
-                self.pts += self.player.energy//100
-                #actualizar_pts()
-                self.player.energy = 0
+        self.quit()
 
     def spawnObstacles(self):
         if len(self.obstacles) < 5:
@@ -287,11 +272,12 @@ class Game:
             self.player.ammoRect.centerx += distance
 
     def quit(self):
-        self.execute = False
         pygame.quit()
-        if self.finish:
-            main.pilots[main.slected].pts = self.pts
-        root.deiconify()
+        if self.window != None:
+            if self.finish:
+                if self.window.pilots[self.window.slected].pts < self.pts:
+                    self.window.pilots[self.window.slected].pts = self.pts
+            self.window.master.deiconify()
 
 if __name__ == "__main__":
-    game = Game()
+    game = Game(None)
