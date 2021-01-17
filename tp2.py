@@ -2,7 +2,8 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
 from PIL import Image, ImageTk
-from random import randint as randint
+from random import randint
+from game import *
 import os, pickle, shutil
 
 class Pilot:
@@ -29,6 +30,8 @@ class MainWindow:
             print("no pilots found")
             self.createPilots()
 
+        self.PlayButton = Button(self.canvas, text = "Jugar", command = self.openGame)
+        self.PlayButton.pack()
         self.AboutButton = Button(self.canvas, text = "Info", command = self.openAbout)
         self.AboutButton.pack()
         self.HighScoresButton = Button(self.canvas, text = "Puntajes", command = self.openHighScores)
@@ -38,15 +41,15 @@ class MainWindow:
 
     def loadImage(self, name):
         path = os.path.join('img', name)
-        img = Image.open(path)
-        return ImageTk.PhotoImage(img)
+        image = Image.open(path)
+        return ImageTk.PhotoImage(image)
 
     def createPilots(self):
         names = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
-        imgs = ["noImg.jpg", "noImg.jpg", "noImg.jpg", "noImg.jpg", "noImg.jpg", "noImg.jpg", "noImg.jpg", "noImg.jpg", "noImg.jpg", "noImg.jpg"]
+        images = ["noImg.jpg", "noImg.jpg", "noImg.jpg", "noImg.jpg", "noImg.jpg", "noImg.jpg", "noImg.jpg", "noImg.jpg", "noImg.jpg", "noImg.jpg"]
         for i in range(0, 10):
-            self.pilots.append(Pilot(names[i], imgs[i]))
-            self.pilots[i].hs = randint(0, 334)
+            self.pilots.append(Pilot(names[i], images[i]))
+            self.pilots[i].hs = randint(0, 1001)
         print("pilots created")
 
     def loadPilots(self):
@@ -54,6 +57,10 @@ class MainWindow:
         self.pilots.extend(pickle.load(file))
         file.close()
         print("pilots loaded")
+
+    def openGame(self):
+        self.master.withdraw()
+        game = Game()
 
     def openAbout(self):
         self.master.withdraw()
@@ -80,7 +87,7 @@ class MainWindow:
         wSettings.mainloop()
 
 class AboutWindow:
-    text ="""Instituto Tecnologico de Costa Rica
+    text = """Instituto Tecnologico de Costa Rica
 Computer Engineering
 Proyecto 2
 Profesor:
@@ -119,7 +126,10 @@ class HighScoresWindow:
         self.sortPilots(0, len(self.pilots) - 1)
         y = 40
         for i in range(0, 7):
-            self.canvas.create_text(130, y, anchor = NW, text = f"{i + 1}) {self.pilots[i].name} Puntos: {self.pilots[i].hs}", font = (20))
+            try:
+                self.canvas.create_text(130, y, anchor = NW, text = f"{i + 1}) {self.pilots[i].name} Puntos: {self.pilots[i].hs}", font = (20))
+            except:
+                self.canvas.create_text(130, y, anchor = NW, text = f"{i + 1}) ----- Puntos: ---", font = (20))
             y += 20
 
         self.BackButton = Button(self.canvas, text = "atras", command = self.back)
@@ -152,7 +162,7 @@ class HighScoresWindow:
 class SettingsWindow:
     img = "noImg.jpg"
     path = ""
-    savePath = os.getcwd() + os.sep + 'Img'
+    savePath = os.getcwd() + os.sep + 'img'
 
     def __init__(self, master):
         self.master = master
@@ -167,6 +177,10 @@ class SettingsWindow:
         for i in main.pilots:
             self.listbox.insert(END, i.name)
 
+        self.selectedImg = main.loadImage(main.pilots[main.selected].img)
+        self.canvas.create_image(400, 200, anchor = NW, image = self.selectedImg, tags = "selected image")
+        self.canvas.create_text(400, 250, anchor = NW, text = main.pilots[main.selected].name, tags = "selected name")
+
         self.NameEntry = Entry(self.canvas, font = (18), width = 10)
         self.NameEntry.place(x = 450, y = 50)
 
@@ -174,12 +188,32 @@ class SettingsWindow:
         self.SelectImgButton.place(x = 400, y = 100)
         self.AddButton = Button(self.canvas, text = "agregar", command = self.addPilot)
         self.AddButton.place(x = 450, y = 130)
+        self.ChangeButton = Button(self.canvas, text = "cambiar nombre", command = self.changeName)
+        self.ChangeButton.place(x = 500, y = 130)
         self.SelectButton = Button(self.canvas, text = "seleccionar piloto", command = self.selectPilot)
-        self.SelectButton.place(x = 450, y = 200)
+        self.SelectButton.place(x = 450, y = 340)
         self.DeleteButton = Button(self.canvas, text = "eliminar", command = self.deletePilot)
-        self.DeleteButton.place(x = 450, y = 230)
+        self.DeleteButton.place(x = 450, y = 370)
         self.BackButton = Button(self.canvas, text = "atras", command = self.back)
         self.BackButton.place(x = 560, y = 370)
+
+    def updateSelection(self):
+        self.selectedImg = main.loadImage(main.pilots[main.selected].img)
+        self.canvas.itemconfig("selected image", image = self.selectedImg)
+        self.canvas.itemconfig("selected name", text = main.pilots[main.selected].name)
+
+    def changeName(self):
+        try:
+            i = self.listbox.curselection()[0]
+            name = self.NameEntry.get()
+            self.NameEntry.delete(0, END)
+            main.pilots[i].name = name
+            self.listbox.delete(i)
+            self.listbox.insert(i, name)
+            self.updateSelection()
+            messagebox.showinfo("Exito", "Nombre cambiado")
+        except:
+            messagebox.showerror("Error", "Seleccione el piloto al que desea cambiar")
 
     def getImage(self):
         self.path = filedialog.askopenfilename()
@@ -207,14 +241,30 @@ class SettingsWindow:
             messagebox.showerror("Error", "Ingrese un nombre para el piloto")
 
     def selectPilot(self):
-        main.selected = self.listbox.curselection()[0]
+        try:
+            main.selected = self.listbox.curselection()[0]
+            self.updateSelection()
+        except:
+            messagebox.showerror("Error", "Seleccione un piloto")
 
     def deletePilot(self):
-        i = self.listbox.curselection()[0]
-        name = main.pilots[i].name
-        main.pilots.pop(i)
-        self.listbox.delete(i)
-        messagebox.showinfo("Exito", f"Piloto {name} eliminado")
+        try:
+            i = self.listbox.curselection()[0]
+            if len(main.pilots) > 1:
+                name = main.pilots[i].name
+                main.pilots.pop(i)
+                if main.selected >= i:
+                    if i > 0:
+                        main.selected -= 1
+                    else:
+                        main.selected = 0
+                    self.updateSelection()
+                self.listbox.delete(i)
+                messagebox.showinfo("Exito", f"Piloto {name} eliminado")
+            else:
+                messagebox.showerror("Error", "Unico piloto disponible")
+        except:
+            messagebox.showerror("Error", "Seleccione el piloto que desea eliminar")
 
     def back(self):
         file = open("pilots.txt", "wb")
