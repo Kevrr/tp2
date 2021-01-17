@@ -6,6 +6,8 @@ from random import randint
 from game import *
 import os, pickle, shutil
 
+# Objeto Pilot
+# atributos: name(str), img(str), hs(int)
 class Pilot:
     name = ""
     img = ""
@@ -15,6 +17,37 @@ class Pilot:
         self.name = name
         self.img = img
 
+# Objeto MainWindow
+# atributos: pilots(list), selected(int), widgets(tk)
+# metodos:
+# loadImage: carga imagenes
+# E: nombre de la imagen(str)
+# S: imagen
+# R: /
+# createPilots: crea los pilotos si no existen
+# E: /
+# S: lista de pilotos
+# R: /
+# loadPilots: carga los pilotos de un txt
+# E: /
+# S: lista de pilotos
+# R: /
+# openGame: abre la ventana del juego
+# E: click de boton
+# S: ventana del juego
+# R: /
+# openAbout: abre la ventana de informacion
+# E: click de boton
+# S: ventana de informacion
+# R: /
+# openHighScores: abre la ventana de puntajes
+# E: click de boton
+# S: ventana de puntajes
+# R: /
+# openSettings: abre la ventana de configuracion
+# E: click de boton
+# S: ventana de configuracion
+# R: /
 class MainWindow:
     pilots = []
     selected = 0
@@ -86,6 +119,13 @@ class MainWindow:
         settings = SettingsWindow(wSettings)
         wSettings.mainloop()
 
+# Objeto AboutWindow
+# atributos: text(str), widgets(tk)
+# metodos:
+# back: vuelve a la ventana principal
+# E: click de boton
+# S: ventana de principal
+# R: /
 class AboutWindow:
     text = """Instituto Tecnologico de Costa Rica
 Computer Engineering
@@ -113,6 +153,21 @@ Version: 0.3"""
         self.master.destroy()
         root.deiconify()
 
+# Objeto HighScoresWindow
+# atributos: pilots(list), widgets(tk)
+# metodos:
+# sortPilots: ordenamiento rapido de la lista de pilotos
+# E: extremos d la lista(int)
+# S: lista ordenada segun puntajes
+# R: /
+# partition: ordenamiento rapido de la lista de pilotos
+# E: extremos de la lista(int)
+# S: indice para ordenar(int)
+# R: /
+# back: vuelve a la ventana principal
+# E: click de boton
+# S: ventana de principal
+# R: /
 class HighScoresWindow:
     pilots = []
 
@@ -159,6 +214,37 @@ class HighScoresWindow:
         self.master.destroy()
         root.deiconify()
 
+# Objeto SettingsWindow
+# atributos: img(str), path(str), savePath(str), widgets(tk)
+# metodos:
+# updateSelection: muestra el piloto seleccionado
+# E: /
+# S: muestra la imagen y nombre del piloto seleccionado
+# R: /
+# changeName: cambia el nombre de un piloto
+# E: nombre escrito en Entry(str)
+# S: cambia el nombre del piloto
+# R: debe haber un piloto seleccionado en la lista y el entry no puede estar vacio
+# getImage: obtiene una imagen para el piloto
+# E: direccion preguntada al usuario
+# S: imagen
+# R: se debe seleccionar una imagen png o jpg
+# addPilot: agrega un piloto
+# E: nombre escrito en Entry(str)
+# S: piloto nuevo
+# R: el entry no puede estar vacio
+# selectPilot: cambia el piloto seleccionado
+# E: click de boton
+# S: cambia el piloto seleccionado
+# R: debe haber un piloto seleccionado en la lista
+# deletePilot: elimina un piloto
+# E: click de boton
+# S: elimina un piloto
+# R: debe haber un piloto seleccionado en la lista, si solo queda un piloto no se puede eliminar
+# back: vuelve a la ventana principal
+# E: click de boton
+# S: ventana de principal
+# R: /
 class SettingsWindow:
     img = "noImg.jpg"
     path = ""
@@ -217,7 +303,7 @@ class SettingsWindow:
 
     def getImage(self):
         self.path = filedialog.askopenfilename()
-        if self.path[-4:].lower() == ".png":
+        if self.path[-4:].lower() == ".png" or self.path[-4:].lower() == ".jpg":
             i = -1
             while self.path[i] != "/":
                 i -= 1

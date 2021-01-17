@@ -2,6 +2,14 @@ import pygame, time
 from pygame.locals import *
 from random import randint
 
+# Objeto Ship
+# atributos: energy(int), shooting(bool)
+# metodos:
+# borders: mantiene al objeto en pantalla
+# shoot: disparo de la nave
+# E: preionar una tecla
+# S: disparo
+# R: /
 class Ship(pygame.sprite.Sprite):
     energy = 1000
     shooting = False
@@ -54,6 +62,18 @@ class Ship(pygame.sprite.Sprite):
                 self.ammoRect.centery = self.rect.centery
                 self.shooting = False
 
+# Objeto Ship
+# atributos: energy(int), shooting(bool)
+# metodos:
+# advance: acerca el objeto
+# collision: comprueba colisiones
+# E: objeto contra el que se va a compobar(Ship)
+# S: aumenta la energia
+# R: /
+# delete: borra el objeto del juego
+# E: /
+# S: elimina el objeto
+# R: /
 class Fuel(pygame.sprite.Sprite):
 
     def __init__(self):
@@ -79,11 +99,22 @@ class Fuel(pygame.sprite.Sprite):
 
     def delete(self):
         i = 0
-        while i < len(self.master.obstacles):
-            if self.master.obstacles[i] == self:
-                self.master.obstacles.pop(i)
+        while i < len(self.master.entities):
+            if self.master.entities[i] == self:
+                self.master.entities.pop(i)
                 break
 
+# Objeto Asteroid
+# metodos:
+# advance: acerca el objeto
+# collision: comprueba colisiones
+# E: objeto contra el que se va a compobar(Ship)
+# S: disminuye la energia, o aumenta los puntos
+# R: /
+# delete: borra el objeto del juego
+# E: /
+# S: elimina el objeto
+# R: /
 class Asteroid(pygame.sprite.Sprite):
 
     def __init__(self, master):
@@ -103,23 +134,34 @@ class Asteroid(pygame.sprite.Sprite):
             self.delete()
 
     def collision(self, sprite):
-        if self.rect.size == (100, 100):
+        if self.rect.size == (100, 100) and not sprite.shooting:
             if self.rect.colliderect(sprite.rect):
                 sprite.energy -= 30
                 self.delete()
-        if self.rect.colliderect(sprite.ammoRect):
-            if not self.rect.colliderect(sprite.rect):
+        elif sprite.shooting:
+            if self.rect.colliderect(sprite.ammoRect):
                 self.master.left -= 1
                 self.master.pts += 100
                 self.delete()
 
     def delete(self):
         i = 0
-        while i < len(self.master.obstacles):
-            if self.master.obstacles[i] == self:
-                self.master.obstacles.pop(i)
+        while i < len(self.master.entities):
+            if self.master.entities[i] == self:
+                self.master.entities.pop(i)
                 break
 
+# Objeto Ring
+# metodos:
+# advance: acerca el objeto
+# collision: comprueba colisiones
+# E: objeto contra el que se va a compobar(Ship)
+# S: disminuye la energia, o aumenta los puntos
+# R: /
+# delete: borra el objeto del juego
+# E: /
+# S: elimina el objeto
+# R: /
 class Ring(pygame.sprite.Sprite):
 
     def __init__(self):
@@ -129,9 +171,15 @@ class Ring(pygame.sprite.Sprite):
         self.rect.centerx = randint(0,700)
         self.rect.centery = randint(50,950)
 
+        self.innerRect = self.image.get_rect()
+        self.innerRect.centerx = self.rect.centerx
+        self.innerRect.centery = self.rect.centery
+        self.innerRect.size = ((self.rect.size[0] / 2, self.rect.size[1] / 2))
+
     def advance(self):
         if self.rect.size != (100, 100):
             self.rect.size = (self.rect.size[0] + 2, self.rect.size[1] + 2)
+            self.innerRect.size = (self.innerRect.size[0] + 1, self.innerRect.size[1] + 1)
             self.image = pygame.transform.scale(self.image, self.rect.size)
         else:
             time.sleep(0.01)
@@ -139,29 +187,53 @@ class Ring(pygame.sprite.Sprite):
 
     def collision(self, sprite):
         if self.rect.size == (100, 100):
-            if self.rect.colliderect(sprite.rect):
-                self.master.left -= 1
-                self.master.pts += 100
-                self.delete()
+            if self.innerRect.colliderect(sprite.rect):
+                if not self.rect.colliderect(sprite.rect):
+                    self.master.left -= 1
+                    self.master.pts += 100
+                    self.delete()
+                else:
+                    sprite.energy -= 30
+                    self.delete()
 
     def delete(self):
         i = 0
-        while i < len(self.master.obstacles):
-            if self.master.obstacles[i] == self:
-                self.master.obstacles.pop(i)
+        while i < len(self.master.entities):
+            if self.master.entities[i] == self:
+                self.master.entities.pop(i)
                 break
 
+# Objeto Game
+# atributos = level(int), pts(int), left(int), execute(bool), finish(bool), entities(list), endText(str)
+# metodos:
+# spawnObstacles: genera asteroides o anillos
+# E: /
+# S: asteroide o anillo
+# R: /
+# spawnFuel: genera combustible
+# E: /
+# S: combustible
+# R: /
+# movePlayer: mueve la nave del jugador
+# E: movimiento(str, int)
+# S: mueve la nave
+# R: /
+# quit: termina el juego
+# E: /
+# S: vuelve a la pantalla principal
+# R: /
 class Game:
     level = 0
     pts = 0
     left = 10
     execute = True
     finish = False
-    obstacles = []
+    entities = []
     endText = ""
 
     def __init__(self, window):
         self.window = window
+
         pygame.init()
 
         self.screen = pygame.display.set_mode((1000, 700))
@@ -183,11 +255,11 @@ class Game:
             self.clock.tick(60)
 
             self.player.borders()
-            self.player.shoot(self.obstacles)
+            self.player.shoot(self.entities)
 
             self.spawnObstacles()
             self.spawnFuel()
-            for i in self.obstacles:
+            for i in self.entities:
                 i.advance()
                 i.collision(self.player)
 
@@ -229,7 +301,7 @@ class Game:
             self.screen.blit(ptsText, (1, 1))
             self.screen.blit(leftText, (1, 12))
             self.screen.blit(energyText, (1, 23))
-            for i in self.obstacles:
+            for i in self.entities:
                 self.screen.blit(i.image, i.rect)
             self.screen.blit(self.player.sightImg, self.player.sightRect)
             self.screen.blit(self.player.ammoImg, self.player.ammoRect)
@@ -241,25 +313,25 @@ class Game:
         self.quit()
 
     def spawnObstacles(self):
-        if len(self.obstacles) < 5:
+        if len(self.entities) < 5:
             spawn = randint(0, 127)
             if spawn == 0:
                 if self.level == 0:
-                    self.obstacles.append(Asteroid(self))
+                    self.entities.append(Asteroid(self))
                 elif self.level == 1:
-                    self.obstacles.append(Ring(self))
+                    self.entities.append(Ring(self))
                 elif self.level == 3:
                     object = randint(0, 2)
                     if object == 0:
-                        self.obstacles.append(Asteroid())
+                        self.entities.append(Asteroid())
                     elif object == 1:
-                        self.obstacles.append(Ring())
+                        self.entities.append(Ring())
 
     def spawnFuel(self):
         if self.player.energy <= 700:
             spawn = randint(0, self.player.energy // 100)
             if spawn == 0:
-                self.obstacles.append(Fuel(self))
+                self.entities.append(Fuel(self))
 
     def movePlayer(self, movement, distance):
         if movement == "y":
@@ -275,8 +347,8 @@ class Game:
         pygame.quit()
         if self.window != None:
             if self.finish:
-                if self.window.pilots[self.window.slected].pts < self.pts:
-                    self.window.pilots[self.window.slected].pts = self.pts
+                if self.window.pilots[self.window.slected].hs < self.pts:
+                    self.window.pilots[self.window.slected].hs = self.pts
             self.window.master.deiconify()
 
 if __name__ == "__main__":
