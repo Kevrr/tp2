@@ -4,7 +4,7 @@ from tkinter import messagebox
 from pygame import mixer
 from PIL import Image, ImageTk
 from random import randint
-from game import *
+#from game import *
 import os, pickle, shutil
 
 # Objeto Pilot
@@ -73,7 +73,7 @@ class MainWindow:
         except:
             print("no pilots found")
             self.createPilots()
-            self.savePilots()
+            #self.savePilots()
 
         self.playImg = self.loadImage("play.jpg")
         self.PlayButton = Button(self.canvas, image = self.playImg, bg = "#306098", command = self.openGame)
@@ -166,7 +166,7 @@ Anthony Acuña Carvajal 2018145084
   Kevin Ruiz Rodríguez 2018170538
             Fecha de emision:
                 18/01/2021
-               Version: 1.4"""
+               Version: 1.5"""
 
     def __init__(self, master):
         self.master = master
@@ -335,9 +335,11 @@ class SettingsWindow:
         self.DeleteButton = Button(self.canvas, image = self.deleteImg, bg = "#D05020", command = self.deletePilot)
         self.DeleteButton.place(x = 450, y = 280)
         self.backImg = main.loadImage("back.jpg")
-        self.OnButton = Button(self.canvas, text = "on", bg = "#784800", command = self.on, state = DISABLED)
+        self.onImg = main.loadImage("on.jpg")
+        self.OnButton = Button(self.canvas, image = self.onImg, bg = "#784800", command = self.on, state = DISABLED)
         self.OnButton.place(x = 380, y = 360)
-        self.OffButton = Button(self.canvas, text = "off", bg = "#784800", command = self.off)
+        self.offImg = main.loadImage("off.jpg")
+        self.OffButton = Button(self.canvas, image = self.offImg, bg = "#784800", command = self.off)
         self.OffButton.place(x = 420, y = 360)
         self.BackButton = Button(self.canvas, image = self.backImg, bg = "#784800", command = self.back)
         self.BackButton.place(x = 460, y = 360)
