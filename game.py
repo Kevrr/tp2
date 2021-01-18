@@ -29,7 +29,10 @@ class Ship(pygame.sprite.Sprite):
         self.ammoImg = pygame.image.load("img\laser.png")
         self.ammoRect = self.ammoImg.get_rect()
         self.ammoRect.centerx = self.rect.centerx
-        self.ammoRect.centery = self.rect.centery
+        self.ammoRect.centery = self.rect.centery + 30
+
+        self.energyImg = pygame.image.load("img\energy.png")
+        self.energyRect = self.energyImg.get_rect()
 
     def borders(self):
         if self.rect.top <= 0:
@@ -44,6 +47,9 @@ class Ship(pygame.sprite.Sprite):
         if self.rect.right >= 1000:
             self.rect.right = 1000
             self.sightRect.centerx = self.rect.centerx
+
+        self.energyRect.size = (0.137 * self.energy, self.energyRect.size[1])
+        self.energyImg = pygame.transform.scale(self.energyImg, self.energyRect.size)
 
     def shoot(self, sprites):
         if self.shooting:
@@ -79,20 +85,20 @@ class Fuel(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load("img/fuel.png")
         self.rect = self.image.get_rect()
-        self.rect.centerx = randint(50, 950)
-        self.rect.centery = randint(150,550)
+        self.rect.centerx = randint(50, 880)
+        self.rect.centery = randint(150, 580)
 
     def advance(self):
-        if self.rect.size[0] != 120:
+        if self.rect.size[0] != 140:
             self.rect.size = (self.rect.size[0] + 2, self.rect.size[1] + 2)
             self.image = pygame.transform.scale(self.image, self.rect.size)
         else:
             self.delete()
 
     def collision(self, sprite):
-        if self.rect.size[0] == 100:
+        if self.rect.size[0] >= 100:
             if self.rect.colliderect(sprite.rect):
-                sprite.energy += 200
+                sprite.energy += 100
                 self.delete()
 
     def delete(self):
@@ -121,8 +127,8 @@ class Asteroid(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load("img/asteroid.png")
         self.rect = self.image.get_rect()
-        self.rect.centerx = randint(0, 884)
-        self.rect.centery = randint(50,950)
+        self.rect.centerx = randint(50, 760)
+        self.rect.centery = randint(50, 460)
 
     def advance(self):
         if self.rect.size != (240, 240):
@@ -132,9 +138,9 @@ class Asteroid(pygame.sprite.Sprite):
             self.delete()
 
     def collision(self, sprite):
-        if self.rect.size == (200, 200) and not sprite.shooting:
+        if self.rect.size[0] >= 200 and not sprite.shooting:
             if self.rect.colliderect(sprite.rect):
-                sprite.energy -= 30
+                sprite.energy -= 50
                 self.delete()
         elif sprite.shooting:
             if self.rect.colliderect(sprite.ammoRect):
@@ -168,32 +174,25 @@ class Ring(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load("img/ring.png")
         self.rect = self.image.get_rect()
-        self.rect.centerx = randint(0,700)
-        self.rect.centery = randint(50,950)
-
-        self.innerRect = self.image.get_rect()
-        self.innerRect.centerx = self.rect.centerx
-        self.innerRect.centery = self.rect.centery
-        self.innerRect.size = ((self.rect.size[0] - 5, self.rect.size[1] - 5))
+        self.rect.centerx = randint(50, 760)
+        self.rect.centery = randint(50, 460)
 
     def advance(self):
         if self.rect.size != (240, 240):
             self.rect.size = (self.rect.size[0] + 2, self.rect.size[1] + 2)
-            self.innerRect.size = (self.innerRect.size[0] + 2, self.innerRect.size[1] + 2)
             self.image = pygame.transform.scale(self.image, self.rect.size)
         else:
-            print(self.rect.size, self.innerRect.size)
             self.delete()
 
     def collision(self, sprite):
-        if self.rect.size == (200, 200):
-            if self.innerRect.colliderect(sprite.rect):
-                if not self.rect.colliderect(sprite.ammoRect):
+        if self.rect.size[0] >= 200:
+            if self.rect.colliderect(sprite.rect):
+                if self.rect.centerx + 70 > sprite.rect.centerx > self.rect.centerx - 70 and self.rect.centery + 70 > sprite.rect.centery > self.rect.centery - 70:
                     self.master.left -= 1
                     self.master.pts += 100
                     self.delete()
                 else:
-                    sprite.energy -= 30
+                    sprite.energy -= 50
                     self.delete()
 
     def delete(self):
@@ -257,8 +256,14 @@ class Game:
         pygame.display.set_caption("Star Force")
         pygame.display.init()
 
+        if window != None:
+            self.playerImg = pygame.image.load(f"img\{window.pilots[window.selected].image}")
+        else:
+            self.playerImg = pygame.image.load("img/noImg.jpg")
+
         self.bg = pygame.image.load("img\gamebg.png")
-        self.textFont = pygame.font.Font(None, 20)
+        self.energybar = pygame.image.load("img\energybar.png")
+        self.textFont = pygame.font.Font(None, 25)
         self.titleFont = pygame.font.Font(None, 100)
 
         self.player = Ship()
@@ -266,10 +271,8 @@ class Game:
         pygame.key.set_repeat(1, 20)
         pygame.mouse.set_visible(False)
 
-        self.clock = pygame.time.Clock()
-
         while self.execute:
-            self.clock.tick(60)
+            pygame.time.wait(1)
 
             self.checkDeath()
             self.checkLevel()
@@ -291,6 +294,9 @@ class Game:
             self.updateScreen()
             self.player.energy -= 0.1
             pygame.display.flip()
+            if self.endText != "":
+                pygame.time.wait(3000)
+                self.endText = ""
 
         self.quit()
 
@@ -326,7 +332,7 @@ class Game:
                 elif self.level == 1:
                     self.entities.append(Ring(self))
                 elif self.level == 2:
-                    object = randint(0, 2)
+                    object = randint(0, 1)
                     if object == 0:
                         self.entities.append(Asteroid(self))
                     elif object == 1:
@@ -357,20 +363,20 @@ class Game:
     def updateScreen(self):
         ptsText = self.textFont.render(f"Puntos = {self.pts}", 1, (255, 255, 255))
         leftText = self.textFont.render(f"Restantes = {self.left}", 1, (255, 255, 255))
-        energyText = self.textFont.render(f"Combustible = {self.player.energy}", 1, (255, 255, 255))
         finalText = self.titleFont.render(f"{self.endText}", 1, (255, 255, 255))
         self.screen.blit(self.bg, (0, 0))
-        self.screen.blit(ptsText, (1, 1))
-        self.screen.blit(leftText, (1, 12))
-        self.screen.blit(energyText, (1, 23))
         for i in self.entities:
             self.screen.blit(i.image, i.rect)
         self.screen.blit(self.player.sightImg, self.player.sightRect)
-        self.screen.blit(self.player.ammoImg, self.player.ammoRect)
+        if self.player.shooting:
+            self.screen.blit(self.player.ammoImg, self.player.ammoRect)
         self.screen.blit(self.player.image, self.player.rect)
+        self.screen.blit(ptsText, (100, 30))
+        self.screen.blit(leftText, (100, 45))
+        self.screen.blit(self.playerImg, (0, 0))
+        self.screen.blit(self.energybar, (100, 0))
+        self.screen.blit(self.player.energyImg, (108, 6))
         self.screen.blit(finalText, (200, 300))
-        if self.endText != "":
-            self.endText = ""
 
     def checkLevel(self):
         if self.left == 0:
@@ -395,7 +401,7 @@ class Game:
                 if self.window.pilots[self.window.slected].hs < self.pts:
                     self.window.pilots[self.window.slected].hs = self.pts
                 window.savePilots()
-            self.window.master.deiconify()
+            self.window.openHighScores()
 
 if __name__ == "__main__":
     game = Game(None)
