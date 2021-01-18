@@ -7,15 +7,15 @@ from game import *
 import os, pickle, shutil
 
 # Objeto Pilot
-# atributos: name(str), img(str), hs(int)
+# atributos: name(str), image(str), hs(int)
 class Pilot:
     name = ""
-    img = ""
+    image = ""
     hs = 0
 
-    def __init__(self, name, img):
+    def __init__(self, name, image):
         self.name = name
-        self.img = img
+        self.image = image
 
 # Objeto MainWindow
 # atributos: pilots(list), selected(int), widgets(tk)
@@ -90,6 +90,11 @@ class MainWindow:
         self.pilots.extend(pickle.load(file))
         file.close()
         print("pilots loaded")
+
+    def savePilots(self):
+        file = open("pilots.txt", "wb")
+        pickle.dump(main.pilots, file)
+        file.close()
 
     def openGame(self):
         self.master.withdraw()
@@ -263,9 +268,9 @@ class SettingsWindow:
         for i in main.pilots:
             self.listbox.insert(END, i.name)
 
-        self.selectedImg = main.loadImage(main.pilots[main.selected].img)
+        self.selectedImg = main.loadImage(main.pilots[main.selected].image)
         self.canvas.create_image(400, 200, anchor = NW, image = self.selectedImg, tags = "selected image")
-        self.canvas.create_text(400, 250, anchor = NW, text = main.pilots[main.selected].name, tags = "selected name")
+        self.canvas.create_text(400, 250, anchor = NW, text = main.pilots[main.selected].name, font = (20), tags = "selected name")
 
         self.NameEntry = Entry(self.canvas, font = (18), width = 10)
         self.NameEntry.place(x = 450, y = 50)
@@ -284,7 +289,7 @@ class SettingsWindow:
         self.BackButton.place(x = 560, y = 370)
 
     def updateSelection(self):
-        self.selectedImg = main.loadImage(main.pilots[main.selected].img)
+        self.selectedImg = main.loadImage(main.pilots[main.selected].image)
         self.canvas.itemconfig("selected image", image = self.selectedImg)
         self.canvas.itemconfig("selected name", text = main.pilots[main.selected].name)
 
@@ -353,9 +358,7 @@ class SettingsWindow:
             messagebox.showerror("Error", "Seleccione el piloto que desea eliminar")
 
     def back(self):
-        file = open("pilots.txt", "wb")
-        pickle.dump(main.pilots, file)
-        file.close()
+        main.savePilots()
         self.master.destroy()
         root.deiconify()
 
