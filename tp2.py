@@ -1,9 +1,10 @@
 from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
+from pygame import mixer
 from PIL import Image, ImageTk
 from random import randint
-from game import *
+#from game import *
 import os, pickle, shutil
 
 # Objeto Pilot
@@ -24,6 +25,8 @@ class Pilot:
 # E: nombre de la imagen(str)
 # S: imagen
 # R: /
+# playMusic: reanuda la musica
+# stopMusic: pausa la musica
 # createPilots: crea los pilotos si no existen
 # E: /
 # S: lista de pilotos
@@ -61,12 +64,16 @@ class MainWindow:
         self.title = self.loadImage("title.png")
         self.canvas.create_image(100, 50, anchor = NW, image = self.title)
 
+        mixer.init()
+        mixer.music.load("sound/Title.mp3")
+        mixer.music.play(loops = -1)
+
         try:
             self.loadPilots()
         except:
             print("no pilots found")
             self.createPilots()
-            self.savePilots()
+            #self.savePilots()
 
         self.playImg = self.loadImage("play.jpg")
         self.PlayButton = Button(self.canvas, image = self.playImg, bg = "#306098", command = self.openGame)
@@ -85,6 +92,12 @@ class MainWindow:
         path = os.path.join('img', name)
         image = Image.open(path)
         return ImageTk.PhotoImage(image)
+
+    def playMusic(self):
+        mixer.music.unpause()
+
+    def stopMusic(self):
+        mixer.music.pause()
 
     def createPilots(self):
         names = ["Fox", "Falco", "Peppy", "Slippy", "Fay", "Miyu", "Wolf", "Pigma", "Andrew", "Leon"]
@@ -107,6 +120,7 @@ class MainWindow:
         print("pilots saved")
 
     def openGame(self):
+        self.stopMusic()
         self.master.withdraw()
         game = Game(self)
 
@@ -152,7 +166,7 @@ Anthony Acuña Carvajal 2018145084
   Kevin Ruiz Rodríguez 2018170538
             Fecha de emision:
                 18/01/2021
-               Version: 1.4"""
+               Version: 1.5"""
 
     def __init__(self, master):
         self.master = master
@@ -262,6 +276,14 @@ class HighScoresWindow:
 # E: click de boton
 # S: elimina un piloto
 # R: debe haber un piloto seleccionado en la lista, si solo queda un piloto no se puede eliminar
+# on: reanuda la musica
+# E: click de boton
+# S: musica continua
+# R: /
+# off: pausa la musica
+# E: click de boton
+# S: musica se pausa
+# R: /
 # back: vuelve a la ventana principal
 # E: click de boton
 # S: ventana de principal
@@ -313,6 +335,12 @@ class SettingsWindow:
         self.DeleteButton = Button(self.canvas, image = self.deleteImg, bg = "#D05020", command = self.deletePilot)
         self.DeleteButton.place(x = 450, y = 280)
         self.backImg = main.loadImage("back.jpg")
+        self.onImg = main.loadImage("on.jpg")
+        self.OnButton = Button(self.canvas, image = self.onImg, bg = "#784800", command = self.on, state = DISABLED)
+        self.OnButton.place(x = 380, y = 360)
+        self.offImg = main.loadImage("off.jpg")
+        self.OffButton = Button(self.canvas, image = self.offImg, bg = "#784800", command = self.off)
+        self.OffButton.place(x = 420, y = 360)
         self.BackButton = Button(self.canvas, image = self.backImg, bg = "#784800", command = self.back)
         self.BackButton.place(x = 460, y = 360)
 
@@ -391,6 +419,16 @@ class SettingsWindow:
                 messagebox.showerror("Error", "Unico piloto disponible")
         except:
             messagebox.showerror("Error", "Seleccione el piloto que desea eliminar")
+
+    def on(self):
+        main.playMusic()
+        self.OnButton["state"] = DISABLED
+        self.OffButton["state"] = NORMAL
+
+    def off(self):
+        main.stopMusic()
+        self.OffButton["state"] = DISABLED
+        self.OnButton["state"] = NORMAL
 
     def back(self):
         self.master.destroy()

@@ -29,7 +29,7 @@ class Ship(pygame.sprite.Sprite):
         self.ammoImg = pygame.image.load("img\laser.png")
         self.ammoRect = self.ammoImg.get_rect()
         self.ammoRect.centerx = self.rect.centerx
-        self.ammoRect.centery = self.rect.centery + 30
+        self.ammoRect.centery = self.rect.centery
 
         self.energyImg = pygame.image.load("img\energy.png")
         self.energyRect = self.energyImg.get_rect()
@@ -48,7 +48,7 @@ class Ship(pygame.sprite.Sprite):
             self.rect.right = 1000
             self.sightRect.centerx = self.rect.centerx
 
-        self.energyRect.size = (0.137 * self.energy, self.energyRect.size[1])
+        self.energyRect.size = (0.137 * max(0, self.energy), self.energyRect.size[1])
         self.energyImg = pygame.transform.scale(self.energyImg, self.energyRect.size)
 
     def shoot(self, sprites):
@@ -99,6 +99,7 @@ class Fuel(pygame.sprite.Sprite):
         if self.rect.size[0] >= 100:
             if self.rect.colliderect(sprite.rect):
                 sprite.energy += 100
+                pygame.mixer.Sound("sound/pickup.mp3").play()
                 self.delete()
 
     def delete(self):
@@ -141,11 +142,13 @@ class Asteroid(pygame.sprite.Sprite):
         if self.rect.size[0] >= 200 and not sprite.shooting:
             if self.rect.colliderect(sprite.rect):
                 sprite.energy -= 50
+                pygame.mixer.Sound("sound/hit.mp3").play()
                 self.delete()
         elif sprite.shooting:
             if self.rect.colliderect(sprite.ammoRect):
                 self.master.left -= 1
                 self.master.pts += 100
+                pygame.mixer.Sound("sound/destroy.mp3").play()
                 self.delete()
 
     def delete(self):
@@ -190,9 +193,11 @@ class Ring(pygame.sprite.Sprite):
                 if self.rect.centerx + 70 > sprite.rect.centerx > self.rect.centerx - 70 and self.rect.centery + 70 > sprite.rect.centery > self.rect.centery - 70:
                     self.master.left -= 1
                     self.master.pts += 100
+                    pygame.mixer.Sound("sound/pass.mp3").play()
                     self.delete()
                 else:
                     sprite.energy -= 50
+                    pygame.mixer.Sound("sound/hit.mp3").play()
                     self.delete()
 
     def delete(self):
@@ -256,6 +261,10 @@ class Game:
         pygame.display.set_caption("Star Force")
         pygame.display.init()
 
+        pygame.mixer.init()
+        pygame.mixer.music.load("sound/Meteo.mp3")
+        pygame.mixer.music.play(loops = -1)
+
         if window != None:
             self.playerImg = pygame.image.load(f"img\{window.pilots[window.selected].image}")
         else:
@@ -295,6 +304,7 @@ class Game:
             self.player.energy -= 0.1
             pygame.display.flip()
             if self.endText != "":
+                pygame.mixer.Sound("sound/next.mp3").play()
                 pygame.time.wait(3000)
                 self.endText = ""
 
@@ -319,6 +329,7 @@ class Game:
                             self.movePlayer("x", 10)
                         if event.key == K_SPACE:
                             if not self.player.shooting:
+                                pygame.mixer.Sound("sound/laser.mp3").play()
                                 self.player.shooting = True
                             else:
                                 self.player.shooting = False
@@ -362,7 +373,6 @@ class Game:
 
     def updateScreen(self):
         ptsText = self.textFont.render(f"Puntos = {self.pts}", 1, (255, 255, 255))
-        leftText = self.textFont.render(f"Restantes = {self.left}", 1, (255, 255, 255))
         finalText = self.titleFont.render(f"{self.endText}", 1, (255, 255, 255))
         self.screen.blit(self.bg, (0, 0))
         for i in self.entities:
@@ -372,7 +382,6 @@ class Game:
             self.screen.blit(self.player.ammoImg, self.player.ammoRect)
         self.screen.blit(self.player.image, self.player.rect)
         self.screen.blit(ptsText, (100, 30))
-        self.screen.blit(leftText, (100, 45))
         self.screen.blit(self.playerImg, (0, 0))
         self.screen.blit(self.energybar, (100, 0))
         self.screen.blit(self.player.energyImg, (108, 6))
@@ -391,6 +400,7 @@ class Game:
 
     def checkDeath(self):
         if self.player.energy <= 0:
+            pygame.mixer.Sound("sound/hit.mp3").play()
             self.endText = "GAME OVER"
             self.finish = True
 
