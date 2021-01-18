@@ -48,7 +48,7 @@ class Ship(pygame.sprite.Sprite):
             self.rect.right = 1000
             self.sightRect.centerx = self.rect.centerx
 
-        self.energyRect.size = (0.137 * self.energy, self.energyRect.size[1])
+        self.energyRect.size = (0.137 * max(0, self.energy), self.energyRect.size[1])
         self.energyImg = pygame.transform.scale(self.energyImg, self.energyRect.size)
 
     def shoot(self, sprites):
