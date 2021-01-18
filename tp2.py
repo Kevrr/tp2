@@ -4,7 +4,7 @@ from tkinter import messagebox
 from pygame import mixer
 from PIL import Image, ImageTk
 from random import randint
-#from game import *
+from game import *
 import os, pickle, shutil
 
 # Objeto Pilot
@@ -73,7 +73,7 @@ class MainWindow:
         except:
             print("no pilots found")
             self.createPilots()
-            #self.savePilots()
+            self.savePilots()
 
         self.playImg = self.loadImage("play.jpg")
         self.PlayButton = Button(self.canvas, image = self.playImg, bg = "#306098", command = self.openGame)
