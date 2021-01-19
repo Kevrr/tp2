@@ -209,7 +209,7 @@ class HighScoresWindow:
 
     def __init__(self, master):
         self.master = master
-        self.pilots.extend(main.pilots)
+        self.pilots = main.pilots
         self.canvas = Canvas(self.master, width = 500, height = 400)
         self.canvas.pack()
         self.bg = main.loadImage("bg2.png")
