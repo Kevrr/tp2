@@ -152,7 +152,7 @@ class Asteroid(pygame.sprite.Sprite):
         elif sprite.shooting:
             if self.rect.colliderect(sprite.ammoRect):
                 self.master.left -= 1
-                self.master.pts += 10
+                self.master.pts += 10 + (self.master.difficulty * 10)
                 pygame.mixer.Sound("sound/destroy.mp3").play()
                 self.delete()
 
@@ -198,7 +198,7 @@ class Ring(pygame.sprite.Sprite):
             if self.rect.colliderect(sprite.rect):
                 if self.rect.centerx + 32 > sprite.rect.centerx > self.rect.centerx - 32 and self.rect.centery + 32 > sprite.rect.centery > self.rect.centery - 32:
                     self.master.left -= 1
-                    self.master.pts += 10
+                    self.master.pts += 10 + (self.master.difficulty * 10)
                     pygame.mixer.Sound("sound/pass.mp3").play()
                     self.delete()
                 else:
