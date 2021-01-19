@@ -453,7 +453,7 @@ class SettingsWindow:
         self.EasyButton["state"] = NORMAL
 
     def setEasy(self):
-        main.difficulty = 2
+        main.difficulty = 0
         self.EasyButton["state"] = DISABLED
         self.HardButton["state"] = NORMAL
         self.NormalButton["state"] = NORMAL
