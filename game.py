@@ -248,7 +248,7 @@ class Ring(pygame.sprite.Sprite):
 # S: vuelve a la pantalla principal
 # R: /
 class Game:
-    level = 1
+    level = 0
     pts = 0
     left = 10
     execute = True
@@ -412,9 +412,9 @@ class Game:
         pygame.quit()
         if self.window != None:
             if self.finish:
-                if self.window.pilots[self.window.slected].hs < self.pts:
-                    self.window.pilots[self.window.slected].hs = self.pts
-                window.savePilots()
+                if self.window.pilots[self.window.selected].hs < self.pts:
+                    self.window.pilots[self.window.selected].hs = self.pts
+                self.window.savePilots()
             self.window.openHighScores()
 
 if __name__ == "__main__":

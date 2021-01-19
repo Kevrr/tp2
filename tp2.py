@@ -64,9 +64,7 @@ class MainWindow:
         self.title = self.loadImage("title.png")
         self.canvas.create_image(100, 50, anchor = NW, image = self.title)
 
-        mixer.init()
-        mixer.music.load("sound/Title.mp3")
-        mixer.music.play(loops = -1)
+        self.playMusic()
 
         try:
             self.loadPilots()
@@ -94,7 +92,12 @@ class MainWindow:
         return ImageTk.PhotoImage(image)
 
     def playMusic(self):
-        mixer.music.unpause()
+        try:
+            mixer.music.unpause()
+        except:
+            mixer.init()
+            mixer.music.load("sound/Title.mp3")
+            mixer.music.play(loops = -1)
 
     def stopMusic(self):
         mixer.music.pause()
