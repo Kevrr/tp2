@@ -108,7 +108,7 @@ class MainWindow:
         images = ["fox.jpg", "falco.jpg", "peppy.jpg", "slippy.jpg", "fay.jpg", "miyu.jpg", "wolf.jpg", "pigma.jpg", "andrew.jpg", "leon.jpg"]
         for i in range(0, 10):
             self.pilots.append(Pilot(names[i], images[i]))
-            self.pilots[i].hs = randint(0, 10) * 100
+            self.pilots[i].hs = randint(0, 40) * 30
         print("pilots created")
 
     def loadPilots(self):
