@@ -54,6 +54,7 @@ class Pilot:
 class MainWindow:
     pilots = []
     selected = 0
+    difficulty = 1
 
     def __init__(self, master):
         self.master = master
@@ -71,7 +72,7 @@ class MainWindow:
         except:
             print("no pilots found")
             self.createPilots()
-            self.savePilots()
+            #self.savePilots()
 
         self.playImg = self.loadImage("play.jpg")
         self.PlayButton = Button(self.canvas, image = self.playImg, bg = "#306098", command = self.openGame)
@@ -337,13 +338,19 @@ class SettingsWindow:
         self.deleteImg = main.loadImage("delete.jpg")
         self.DeleteButton = Button(self.canvas, image = self.deleteImg, bg = "#D05020", command = self.deletePilot)
         self.DeleteButton.place(x = 450, y = 280)
-        self.backImg = main.loadImage("back.jpg")
+        self.HardButton = Button(self.canvas, text = "DIFICIL", fg = "#BDFAFD", bg = "#9194A7", command = self.setHard)
+        self.HardButton.place(x = 300, y = 310)
+        self.NormalButton  = Button(self.canvas, text = "NORMAL", fg = "#BDFAFD", bg = "#9194A7", command = self.setNormal, state = DISABLED)
+        self.NormalButton.place(x = 300, y = 340)
+        self.EasyButton  = Button(self.canvas, text = "EASY", fg = "#BDFAFD",bg = "#9194A7", command = self.setEasy)
+        self.EasyButton.place(x = 300, y = 370)
         self.onImg = main.loadImage("on.jpg")
         self.OnButton = Button(self.canvas, image = self.onImg, bg = "#784800", command = self.on, state = DISABLED)
         self.OnButton.place(x = 380, y = 360)
         self.offImg = main.loadImage("off.jpg")
         self.OffButton = Button(self.canvas, image = self.offImg, bg = "#784800", command = self.off)
         self.OffButton.place(x = 420, y = 360)
+        self.backImg = main.loadImage("back.jpg")
         self.BackButton = Button(self.canvas, image = self.backImg, bg = "#784800", command = self.back)
         self.BackButton.place(x = 460, y = 360)
 
@@ -432,6 +439,24 @@ class SettingsWindow:
         main.stopMusic()
         self.OffButton["state"] = DISABLED
         self.OnButton["state"] = NORMAL
+
+    def setHard(self):
+        main.difficulty = 2
+        self.HardButton["state"] = DISABLED
+        self.NormalButton["state"] = NORMAL
+        self.EasyButton["state"] = NORMAL
+
+    def setNormal(self):
+        main.difficulty = 1
+        self.NormalButton["state"] = DISABLED
+        self.HardButton["state"] = NORMAL
+        self.EasyButton["state"] = NORMAL
+
+    def setEasy(self):
+        main.difficulty = 2
+        self.EasyButton["state"] = DISABLED
+        self.HardButton["state"] = NORMAL
+        self.NormalButton["state"] = NORMAL
 
     def back(self):
         self.master.destroy()

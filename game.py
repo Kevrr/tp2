@@ -11,7 +11,7 @@ from random import randint
 # S: disparo
 # R: /
 class Ship(pygame.sprite.Sprite):
-    energy = 1000
+    energy = 100
     shooting = False
 
     def __init__(self):
@@ -48,7 +48,7 @@ class Ship(pygame.sprite.Sprite):
             self.rect.right = 1000
             self.sightRect.centerx = self.rect.centerx
 
-        self.energyRect.size = (0.137 * max(0, self.energy), self.energyRect.size[1])
+        self.energyRect.size = (1.37 * max(0, self.energy), self.energyRect.size[1])
         self.energyImg = pygame.transform.scale(self.energyImg, self.energyRect.size)
 
     def shoot(self, sprites):
@@ -99,7 +99,9 @@ class Fuel(pygame.sprite.Sprite):
     def collision(self, sprite):
         if self.rect.size[0] >= 80:
             if self.rect.colliderect(sprite.rect):
-                sprite.energy += 100
+                sprite.energy += 40
+                if sprite.energy > 100:
+                    sprite.energy = 100
                 pygame.mixer.Sound("sound/pickup.mp3").play()
                 self.delete()
 
@@ -144,13 +146,13 @@ class Asteroid(pygame.sprite.Sprite):
     def collision(self, sprite):
         if self.rect.size[0] >= 200 and not sprite.shooting:
             if self.rect.colliderect(sprite.rect):
-                sprite.energy -= 50
+                sprite.energy -= 30
                 pygame.mixer.Sound("sound/hit.mp3").play()
                 self.delete()
         elif sprite.shooting:
             if self.rect.colliderect(sprite.ammoRect):
                 self.master.left -= 1
-                self.master.pts += 100
+                self.master.pts += 10
                 pygame.mixer.Sound("sound/destroy.mp3").play()
                 self.delete()
 
@@ -196,11 +198,11 @@ class Ring(pygame.sprite.Sprite):
             if self.rect.colliderect(sprite.rect):
                 if self.rect.centerx + 32 > sprite.rect.centerx > self.rect.centerx - 32 and self.rect.centery + 32 > sprite.rect.centery > self.rect.centery - 32:
                     self.master.left -= 1
-                    self.master.pts += 100
+                    self.master.pts += 10
                     pygame.mixer.Sound("sound/pass.mp3").play()
                     self.delete()
                 else:
-                    sprite.energy -= 50
+                    sprite.energy -= 30
                     pygame.mixer.Sound("sound/hit.mp3").play()
                     self.delete()
 
@@ -250,7 +252,7 @@ class Ring(pygame.sprite.Sprite):
 class Game:
     level = 0
     pts = 0
-    left = 10
+    left = 30
     execute = True
     finish = False
     entities = []
@@ -269,10 +271,14 @@ class Game:
         pygame.mixer.music.load("sound/Meteo.mp3")
         pygame.mixer.music.play(loops = -1)
 
-        if window != None:
+        if self.window != None:
             self.playerImg = pygame.image.load(f"img\{window.pilots[window.selected].image}")
+            self.difficulty = window.difficulty
         else:
             self.playerImg = pygame.image.load("img/noImg.jpg")
+            self.difficulty = 1
+
+        self.left += self.difficulty * 10
 
         self.bg = pygame.image.load("img\gamebg.png")
         self.energybar = pygame.image.load("img\energybar.png")
@@ -305,7 +311,7 @@ class Game:
             self.getInput()
 
             self.updateScreen()
-            self.player.energy -= 0.1
+            self.player.energy -= 0.01 + (self.difficulty * 0.02)
             pygame.display.flip()
             if self.endText != "":
                 pygame.mixer.Sound("sound/next.mp3").play()
@@ -340,7 +346,7 @@ class Game:
 
     def spawnObstacles(self):
         if len(self.entities) < 5:
-            spawn = randint(0, 127)
+            spawn = randint(0, 127 - (self.difficulty * 32))
             if spawn == 0:
                 if self.level == 0:
                     self.entities.append(Asteroid(self))
@@ -360,8 +366,8 @@ class Game:
             for i in self.entities:
                 if type(i) == type(entity):
                     present = True
-            if self.player.energy <= 700 and not present:
-                spawn = randint(0, 127)
+            if self.player.energy <= 70 and not present:
+                spawn = randint(0, 127 + (self.difficulty * 16))
                 if spawn == 0:
                     self.entities.append(entity)
 
@@ -397,7 +403,7 @@ class Game:
                 self.endText = "NIVEL SUPERADO"
                 self.level += 1
                 self.entities =  []
-                self.left = 10
+                self.left = 30 + self.difficulty * 10
             else:
                 self.endText = "MISION CUMPLIDA"
                 self.finish = True
