@@ -421,6 +421,7 @@ class Game:
                 if self.window.pilots[self.window.selected].hs < self.pts:
                     self.window.pilots[self.window.selected].hs = self.pts
                 self.window.savePilots()
+            self.window.playMusic()
             self.window.openHighScores()
 
 if __name__ == "__main__":
