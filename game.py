@@ -82,21 +82,22 @@ class Fuel(pygame.sprite.Sprite):
 
     def __init__(self, master):
         self.master = master
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load("img/fuel.png")
-        self.rect = self.image.get_rect()
+        self.originalImg = pygame.image.load("img/fuel.png")
+        self.rect = self.originalImg.get_rect()
+        self.rect.size = (16, 16)
+        self.image = pygame.transform.scale(self.originalImg, self.rect.size)
         self.rect.centerx = randint(50, 880)
         self.rect.centery = randint(150, 580)
 
     def advance(self):
-        if self.rect.size[0] != 140:
-            self.rect.size = (self.rect.size[0] + 2, self.rect.size[1] + 2)
-            self.image = pygame.transform.scale(self.image, self.rect.size)
+        if self.rect.size[0] != 128:
+            self.rect.size = (self.rect.size[0] + 1, self.rect.size[1] + 1)
+            self.image = pygame.transform.scale(self.originalImg, self.rect.size)
         else:
             self.delete()
 
     def collision(self, sprite):
-        if self.rect.size[0] >= 100:
+        if self.rect.size[0] >= 80:
             if self.rect.colliderect(sprite.rect):
                 sprite.energy += 100
                 pygame.mixer.Sound("sound/pickup.mp3").play()
@@ -126,15 +127,17 @@ class Asteroid(pygame.sprite.Sprite):
     def __init__(self, master):
         self.master = master
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load("img/asteroid.png")
-        self.rect = self.image.get_rect()
+        self.originalImg = pygame.image.load("img/asteroid.png")
+        self.rect = self.originalImg.get_rect()
+        self.rect.size = (32, 32)
+        self.image = pygame.transform.scale(self.originalImg, self.rect.size)
         self.rect.centerx = randint(50, 760)
         self.rect.centery = randint(50, 460)
 
     def advance(self):
-        if self.rect.size != (240, 240):
-            self.rect.size = (self.rect.size[0] + 2, self.rect.size[1] + 2)
-            self.image = pygame.transform.scale(self.image, self.rect.size)
+        if self.rect.size != (256, 256):
+            self.rect.size = (self.rect.size[0] + 1, self.rect.size[1] + 1)
+            self.image = pygame.transform.scale(self.originalImg, self.rect.size)
         else:
             self.delete()
 
@@ -174,23 +177,24 @@ class Ring(pygame.sprite.Sprite):
 
     def __init__(self, master):
         self.master = master
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load("img/ring.png")
-        self.rect = self.image.get_rect()
+        self.originalImg = pygame.image.load("img/ring.png")
+        self.rect = self.originalImg.get_rect()
+        self.rect.size = (32, 32)
+        self.image = pygame.transform.scale(self.originalImg, self.rect.size)
         self.rect.centerx = randint(50, 760)
         self.rect.centery = randint(50, 460)
 
     def advance(self):
-        if self.rect.size != (240, 240):
-            self.rect.size = (self.rect.size[0] + 2, self.rect.size[1] + 2)
-            self.image = pygame.transform.scale(self.image, self.rect.size)
+        if self.rect.size != (256, 256):
+            self.rect.size = (self.rect.size[0] + 1, self.rect.size[1] + 1)
+            self.image = pygame.transform.scale(self.originalImg, self.rect.size)
         else:
             self.delete()
 
     def collision(self, sprite):
         if self.rect.size[0] >= 200:
             if self.rect.colliderect(sprite.rect):
-                if self.rect.centerx + 70 > sprite.rect.centerx > self.rect.centerx - 70 and self.rect.centery + 70 > sprite.rect.centery > self.rect.centery - 70:
+                if self.rect.centerx + 32 > sprite.rect.centerx > self.rect.centerx - 32 and self.rect.centery + 32 > sprite.rect.centery > self.rect.centery - 32:
                     self.master.left -= 1
                     self.master.pts += 100
                     pygame.mixer.Sound("sound/pass.mp3").play()
@@ -244,7 +248,7 @@ class Ring(pygame.sprite.Sprite):
 # S: vuelve a la pantalla principal
 # R: /
 class Game:
-    level = 0
+    level = 1
     pts = 0
     left = 10
     execute = True
